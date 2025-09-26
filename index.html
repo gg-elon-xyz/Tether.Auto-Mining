@@ -70,15 +70,6 @@
       color: #444;
       cursor: not-allowed;
     }
-    .balance {
-      font-size: 2.1em;
-      text-align: center;
-      margin: 18px 0 10px 0;
-      color: #00ffcc;
-      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-    }
     .sub {
       text-align: center;
       font-size: 0.95em;
@@ -100,6 +91,47 @@
     }
     .hidden {
       display: none !important;
+    }
+    /* Circle Dashboard */
+    .circle-dashboard {
+      width: 182px;
+      height: 182px;
+      margin: 0 auto 18px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .circle-inner {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .circle-amount {
+      font-size: 2.15em;
+      color: #00ffcc;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+    .circle-label {
+      font-size: 0.98em;
+      color: #f0b90b;
+      margin-top: 2px;
+      letter-spacing: 0.15em;
+      font-weight: 600;
+    }
+    /* Spinning animation */
+    .spinning {
+      animation: spin 1.2s linear infinite;
+      transform-origin: 50% 50%;
+    }
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
     }
     /* Modal styles */
     .modal-bg {
@@ -180,6 +212,7 @@
     }
     @media (max-width: 540px) {
       .container {margin: 10vw 1vw; padding: 5vw 2vw;}
+      .circle-dashboard {width: 70vw;height: 70vw;max-width: 210px;max-height:210px;}
     }
   </style>
 </head>
@@ -237,7 +270,31 @@
     <div class="greeting" id="greeting"></div>
     <h2>Mining Dashboard</h2>
     <div class="sub">Your Binance Wallet is mining USDT</div>
-    <div class="balance" id="balance">$30.00 USDT</div>
+    <div class="circle-dashboard">
+      <svg id="circleSVG" width="182" height="182" viewBox="0 0 182 182">
+        <circle
+          cx="91" cy="91" r="80"
+          stroke="#232949"
+          stroke-width="15"
+          fill="none"
+        />
+        <circle
+          id="progressCircle"
+          cx="91" cy="91" r="80"
+          stroke="#f0b90b"
+          stroke-width="15"
+          fill="none"
+          stroke-linecap="round"
+          stroke-dasharray="502"
+          stroke-dashoffset="0"
+          style="transition: stroke-dashoffset 0.6s cubic-bezier(.65,0,.42,1);"
+        />
+      </svg>
+      <div class="circle-inner">
+        <div class="circle-amount" id="circleAmount">$30.00</div>
+        <div class="circle-label">USDT</div>
+      </div>
+    </div>
     <div class="row">
       <button id="startBtn" onclick="startMining()">Start Mining</button>
       <button id="withdrawBtn" disabled onclick="openWithdraw()">Withdraw</button>
@@ -257,25 +314,28 @@
     const MINING_TARGET_BALANCE = 2700;
     const MINING_DURATION_MS = 4 * 60 * 60 * 1000; // 4 hours
     // For test: set to 30sec: const MINING_DURATION_MS = 30000;
+    const CIRCLE_CIRCUM = 2 * Math.PI * 80; // r=80
 
     // --- DOM Elements ---
     const registrationDiv = document.getElementById('registration');
     const dashboardDiv = document.getElementById('dashboard');
-    const balanceDisplay = document.getElementById('balance');
     const withdrawBtn = document.getElementById('withdrawBtn');
     const startBtn = document.getElementById('startBtn');
     const greetingDiv = document.getElementById('greeting');
     const modalBg = document.getElementById('modalBg');
     const modalContent = document.getElementById('modalContent');
+    const progressCircle = document.getElementById('progressCircle');
+    const circleAmount = document.getElementById('circleAmount');
+    const circleSVG = document.getElementById('circleSVG');
 
     // --- State ---
     let miningStarted = false;
     let miningFinished = false;
-    let miningInterval;
     let miningStartTime = null;
     let miningEndTime = null;
     let balance = MINING_START_BALANCE;
     let user = {};
+    let animationFrame;
 
     // --- Utility Functions ---
     function saveUserState() {
@@ -320,15 +380,16 @@
       dashboardDiv.classList.remove('hidden');
       greetingDiv.textContent = user.name ? `Hi, ${user.name}! Welcome to your Binance Wallet.` : '';
     }
-    function updateBalance() {
-      balanceDisplay.textContent = `$${balance.toFixed(2)} USDT`;
+    function updateCircleDashboard(progress) {
+      // progress: 0-1
+      const offset = CIRCLE_CIRCUM * (1 - progress);
+      progressCircle.setAttribute('stroke-dasharray', CIRCLE_CIRCUM);
+      progressCircle.setAttribute('stroke-dashoffset', offset);
+      circleAmount.textContent = `$${balance.toFixed(2)}`;
     }
-    function checkMiningStatus() {
-      // Called on page load and interval
+    function animateDashboard() {
       if (!miningStarted || !miningStartTime || !miningEndTime) {
-        withdrawBtn.disabled = true;
-        startBtn.disabled = false;
-        updateBalance();
+        updateCircleDashboard(0);
         return;
       }
       const now = Date.now();
@@ -336,23 +397,25 @@
         miningFinished = true;
         miningStarted = false;
         balance = MINING_TARGET_BALANCE;
-        updateBalance();
+        updateCircleDashboard(1);
         withdrawBtn.disabled = false;
         startBtn.disabled = true;
-        // Save final state
+        progressCircle.classList.remove("spinning");
         saveMiningState();
+        cancelAnimationFrame(animationFrame);
         return;
       }
-
       const elapsed = now - miningStartTime;
       const duration = miningEndTime - miningStartTime;
       const progress = Math.min(elapsed / duration, 1);
       balance = MINING_START_BALANCE + (MINING_TARGET_BALANCE - MINING_START_BALANCE) * progress;
-      updateBalance();
+      updateCircleDashboard(progress);
       withdrawBtn.disabled = true;
       startBtn.disabled = true;
-      // Save ongoing state
       saveMiningState();
+      // Keep spinning while mining
+      progressCircle.classList.add("spinning");
+      animationFrame = requestAnimationFrame(animateDashboard);
     }
 
     // --- Registration ---
@@ -370,8 +433,8 @@
       saveUserState();
       resetMiningState();
       showDashboard();
-      updateBalance();
-      checkMiningStatus();
+      updateCircleDashboard(0);
+      animateDashboard();
     }
 
     // --- Mining ---
@@ -382,7 +445,7 @@
       miningStartTime = Date.now();
       miningEndTime = miningStartTime + MINING_DURATION_MS;
       saveMiningState();
-      checkMiningStatus();
+      animateDashboard();
     }
 
     // --- Withdraw Flow ---
@@ -391,7 +454,7 @@
       showModal(`
         <h3>Confirm Withdraw</h3>
         <div style="margin-bottom:10px;">You are about to withdraw:</div>
-        <div class="balance" style="margin:8px auto 8px auto;font-size:1.2em;">$${balance.toFixed(2)} USDT</div>
+        <div class="circle-amount" style="margin:8px auto 8px auto;font-size:1.2em;">$${balance.toFixed(2)} USDT</div>
         <div style="margin-bottom:6px;">To Address:</div>
         <div class="usdt-addr">${user.usdt}</div>
         <button onclick="confirmWithdraw()" style="margin-top:18px;">Confirm</button>
@@ -440,10 +503,26 @@
       if (loadUserState()) {
         showDashboard();
         loadMiningState();
-        updateBalance();
-        checkMiningStatus();
-        // Poll mining every 800ms for UI update and persistence
-        setInterval(checkMiningStatus, 800);
+        // Show the correct animation/progress
+        if (miningStarted) {
+          animateDashboard();
+        } else {
+          const now = Date.now();
+          if (miningEndTime && now >= miningEndTime) {
+            miningFinished = true;
+            miningStarted = false;
+            balance = MINING_TARGET_BALANCE;
+            updateCircleDashboard(1);
+            withdrawBtn.disabled = false;
+            startBtn.disabled = true;
+            progressCircle.classList.remove("spinning");
+          } else {
+            updateCircleDashboard(0);
+            progressCircle.classList.remove("spinning");
+            startBtn.disabled = false;
+            withdrawBtn.disabled = true;
+          }
+        }
       }
     }
     initApp();
