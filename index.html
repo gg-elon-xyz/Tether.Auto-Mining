@@ -1,152 +1,170 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fil" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Withdrawal Confirmation</title>
+  <meta charset="UTF-8">
+  <title>CRYPTO REALESE</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f7fa;
+      background-color: #f9f9f9;
       margin: 0;
-      padding: 0;
-      color: #333;
+      padding: 20px;
     }
     .container {
-      max-width: 420px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
-      padding: 24px;
+      background-color: #fff;
+      max-width: 400px;
+      margin: auto;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    .logo {
-      text-align: center;
-      margin-bottom: 20px;
+    .step {
+      display: none;
     }
-    .logo img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      object-fit: contain;
-    }
-    .title {
-      font-size: 20px;
-      font-weight: 600;
-      text-align: center;
-      margin-bottom: 16px;
-    }
-    .details {
-      font-size: 15px;
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-    .details strong {
-      display: inline-block;
-      width: 140px;
-    }
-    .btn {
+    .step.active {
       display: block;
-      width: 100%;
-      padding: 12px;
-      background-color: #0052ff;
-      color: white;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
     }
-    .btn:disabled {
-      background-color: #999;
-      cursor: not-allowed;
-    }
-    .spinner {
-      display: none;
-      margin: 20px auto;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #0052ff;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .modal {
-      display: none;
-      background: rgba(0,0,0,0.6);
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      justify-content: center;
-      align-items: center;
-    }
-    .modal-content {
-      background: white;
-      padding: 24px;
-      border-radius: 12px;
-      max-width: 360px;
+    h2 {
       text-align: center;
+      color: #333;
+      margin-bottom: 20px;
     }
-    .modal-content h3 {
-      margin-bottom: 12px;
-      color: #d32f2f;
+    .label {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
     }
-    .modal-content p {
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-    .deposit-address {
-      font-family: monospace;
-      background: #eee;
-      padding: 8px;
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
       border-radius: 6px;
-      word-break: break-all;
+      text-align: left;
+    }
+    .button {
+      background-color: #007bff;
+      color: white;
+      padding: 14px;
+      border: none;
+      border-radius: 6px;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .button:hover {
+      background-color: #0056b3;
+    }
+    .value {
+      font-size: 1.1em;
+      margin-bottom: 10px;
+      word-break: break-word;
+    }
+    .red {
+      color: #d60000;
+    }
+    .error {
+      color: #d60000;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .note {
+      text-align: center;
+      font-size: 0.95em;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    .address-box {
+      margin-top: 15px;
+      font-size: 0.9em;
+      color: #333;
+      text-align: center;
+      word-break: break-word;
     }
   </style>
 </head>
 <body>
+  <div class="container">
 
-<div class="container">
-  <div class="logo">
-    <img src="IMG_8818.png" alt="OKX Logo" />
+    <!-- Step 1: Input -->
+    <div class="step active" id="step1">
+      <h2>Pag-withdraw ng USDT</h2>
+      <label class="label">Halaga</label>
+      <input type="text" id="amount" value="107000.00">
+
+      <label class="label">Address ng Tatanggap</label>
+      <input type="text" id="recipient" value="TRM7xHvZSz9ZuGRFqZcSVEvQjPh6XxKDhq">
+
+      <label class="label">Deskripsyon</label>
+      <textarea readonly>
+Ang paraang ito ay awtomatiko.
+Siguraduhing tama ang uri ng currency at network.
+I-double check ang lahat ng detalye upang maiwasan ang pagkakamali o pagkawala ng pondo.
+      </textarea>
+
+      <button class="button" onclick="goToStep(2)">Susunod</button>
+    </div>
+
+    <!-- Step 2: Confirmation -->
+    <div class="step" id="step2">
+      <h2>Kumpirmasyon</h2>
+      <div class="label">Halaga</div>
+      <div class="value red" id="confirmAmount"></div>
+
+      <div class="label">Address ng Tatanggap</div>
+      <div class="value" id="confirmRecipient"></div>
+
+      <button class="button" onclick="goToStep(3)">Kumpirmahin</button>
+    </div>
+
+    <!-- Step 3: Error + Pay -->
+    <div class="step" id="step3">
+      <h2>Pagbayad</h2>
+      <div class="label">Halaga ng Babayaran</div>
+      <div class="value red" id="summaryAmount"></div>
+
+      <div class="label">Bayad (Fee)</div>
+      <div class="value">38 TRX</div>
+
+      <div class="label">Tatanggap na Address</div>
+      <div class="value" id="summaryRecipient"></div>
+
+      <div class="label">Paraan ng Pagbayad</div>
+      <div class="value">USDT-TRC20 (Auto)</div>
+
+      <div class="error">ERROR: KULANG ANG BANDWIDTH</div>
+      <div class="note">Kailangan ng 38 TRX para sa maayos at garantisadong pag-release ng pondo.</div>
+
+      <button class="button" onclick="showPaymentAddress()">Bayaran Ngayon</button>
+
+      <div class="address-box" id="paymentAddress" style="display:none;">
+        Address ng Pagbayad: TY4SpRKLhXgo6KjxmbjK5CBEUhP74WbYAa
+      </div>
+    </div>
+
   </div>
-  <div class="title">Withdrawal Confirmation</div>
-  <div class="details">
-    <p><strong>Amount:</strong> 40,000 USDT</p>
-    <p><strong>Price:</strong> $1/USDT</p>
-    <p><strong>Network:</strong> Tron (TRC20)</p>
-    <p><strong>Network Fee:</strong> 60 USDT</p>
-    <p><strong>Status:</strong> Pending</p>
-    <p><strong>Address:</strong> TJHh7ANN8mHsxtp92aiRSwuo8GikTj1igs</p>
-    <p><strong>Submitted:</strong> Oct 6, 2025, 10:42 AM</p>
-    <p><strong>Reference No.:</strong> 3452420025</p>
-  </div>
-  <button class="btn" onclick="confirmWithdrawal()">Confirm Withdrawal</button>
-  <div class="spinner" id="spinner"></div>
-</div>
 
-<div class="modal" id="errorModal">
-  <div class="modal-content">
-    <h3>Network Fee Required</h3>
-    <p>To release your transaction immediately, please deposit the 60 USDT network fee to the address below:</p>
-    <div class="deposit-address">TJj8uPa1tvJ66a5cjEb7Yc32v3iXdFWQSn</div>
-  </div>
-</div>
+  <script>
+    function goToStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step' + step).classList.add('active');
 
-<script>
-  function confirmWithdrawal() {
-    document.querySelector('.btn').disabled = true;
-    document.getElementById('spinner').style.display = 'block';
-    setTimeout(() => {
-      document.getElementById('spinner').style.display = 'none';
-      document.getElementById('errorModal').style.display = 'flex';
-    }, 5000);
-  }
-</script>
+      if (step === 2) {
+        document.getElementById('confirmAmount').textContent = document.getElementById('amount').value + " USDT";
+        document.getElementById('confirmRecipient').textContent = document.getElementById('recipient').value;
+      }
 
+      if (step === 3) {
+        document.getElementById('summaryAmount').textContent = document.getElementById('amount').value + " USDT";
+        document.getElementById('summaryRecipient').textContent = document.getElementById('recipient').value;
+      }
+    }
+
+    function showPaymentAddress() {
+      document.getElementById("paymentAddress").style.display = "block";
+    }
+  </script>
 </body>
 </html>
